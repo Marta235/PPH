@@ -1,0 +1,30 @@
+include : "conf.sk"
+#calculate kmeans on ff genes 
+rule calculate_kmeans_2:
+    input:data=DATA_DIR+'/saver_mat/filtered_annotated_saver_ribomito_{sample}_log2_pc1_cpm.csv'
+    output:out='{sample}/{sample}_kmeans.csv'
+    log: log="{sample}/{sample}_kmeans_log.log"
+    script:SRC_DIR+'/kmeans.R'
+
+#calculate cell's silhouette score, save as filtered all cells belonging to cluster paneth with silhouette score< 0
+rule silhuette_filtering:
+    input:data=DATA_DIR+'/saver_mat/filtered_annotated_saver_ribomito_{sample}_log2_pc1_cpm.csv',clusters='{sample}/{sample}_kmeans.csv'
+    output:out='{sample}/{sample}_kmeans_filtered.csv'
+    log: log="{sample}/{sample}_kmeans_log_filtered.log"
+    script:SRC_DIR+'/silhouette.R'
+rule all_kmeans_filtered:
+    input:expand('{sample}/{sample}_kmeans_filtered.csv', sample=SAMPLES)
+
+rule dataset_ff:
+    input: data=DATA_DIR+'/saver_mat/filtered_annotated_saver_ribomito_{sample}_log2_pc1_cpm.csv'
+    output: out='useful_genes_datasets/{sample}_log2cpm.csv'
+    script: SRC_DIR+'/produce_usefull_genes_dataset.R'
+rule all_ff:    
+    input: expand("useful_genes/{sample}_log2cpm.csv", sample=SAMPLES)
+
+rule calculate_umap:
+    input:data=DATA_DIR+'/saver_mat/filtered_annotated_saver_ribomito_{sample}_log2_pc1_cpm.csv'
+    output:out='{sample}/{sample}_umap.csv'
+    script:SRC_DIR+'/compute_umap.R'
+rule all_umap:
+    input:expand('{sample}/{sample}_umap.csv', sample=SAMPLES)
