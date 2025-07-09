@@ -94,3 +94,43 @@ ht_pval <- Heatmap(mat_pval_cat,
                    ))
 
 draw(ht_nes + ht_pval, heatmap_legend_side = "right")
+
+
+## volcano HES1 just for...
+library(DESeq2)
+#load('/mnt/trcanmed/snaketree/prj/DE_RNASeq/dataset/cetuxi_resp_4wt_PDX/cetuxi_cutoff0.05-res.vs.sens.deseq2.tsv_DESeq.Rdata')
+load('/mnt/trcanmed/snaketree/prj/DE_RNASeq/dataset/cetuxi_resp_4wt_PDO/cetuxi_cutoff0.05-res.vs.sens.deseq2.tsv_DESeq.Rdata')
+
+plot_volcano <- function(resnona, alpha, lfc, outfile, title, wanted) {
+  for (i in rownames(resnona)) {
+    if (resnona[i,"log2FoldChange"] > lfc && resnona[i,"pvalue"] < alpha) {
+      resnona[i, "sign"] <- "up"
+    } else if (resnona[i,"log2FoldChange"] < -lfc && resnona[i,"pvalue"] < alpha) {
+      resnona[i, "sign"] <- "down"
+    } else {
+      resnona[i,"sign"] <- "no_diff"
+    }
+  }
+  p <- ggplot(resnona, aes(log2FoldChange, -log10(pvalue))) +
+    geom_point(aes(col = sign),size=0.5) + theme_bw() +
+    scale_color_manual(values = c("blue", "#999999", "red"), drop=FALSE) + # red orange green black -> orange blue green gray 
+    ggtitle(title)
+  
+  show <- rbind(resnona[1:10,], resnona[rownames(resnona) %in% wanted, , drop=F])
+  p <- p + geom_text_repel(data=show, aes(label=rownames(show)))
+  
+  #ggsave(outfile)
+  print(p)
+}
+plot_volcano(resnona_df, alpha, lfc, volcano, title, 'H_HES1')
+
+# investigation on magnitude of deg > in pdos even if with smaller n.
+#egrassi@godot:/mnt/trcanmed/snaketree/prj/DE_RNASeq/dataset/cetuxi_resp_4wt_PDO$ grep -f <(sed 1d samples_data | cut -f 2 |sort | uniq) < /mnt/trcanmed/snaketree/prj/pdxopedia/local/share/data/treats/last_march2024/last_cet_march2024.txt  > os
+#egrassi@godot:/mnt/trcanmed/snaketree/prj/DE_RNASeq/dataset/cetuxi_resp_4wt_PDX$ grep -f <(sed 1d samples_data | cut -f 2 |sort | uniq) < /mnt/trcanmed/snaketree/prj/pdxopedia/local/share/data/treats/last_march2024/last_cet_march2024.txt  > xs
+
+o <- read.table('/mnt/trcanmed/snaketree/prj/DE_RNASeq/dataset/cetuxi_resp_4wt_PDO/os', sep="\t", header=F)
+x <- read.table('/mnt/trcanmed/snaketree/prj/DE_RNASeq/dataset/cetuxi_resp_4wt_PDX/xs', sep="\t", header=F)
+
+pd <- data.frame(volvar=c(o$V2*100, x$V2*100), class=c(rep('o', nrow(o)),rep('x', nrow(x))))
+pd$resp <- ifelse(pd$volvar < -50, 'S', 'R')
+ggplot(data=pd, aes(x=class, y=volvar))+theme_bw(base_size = 20)+geom_jitter(aes(color=resp), height=0)
