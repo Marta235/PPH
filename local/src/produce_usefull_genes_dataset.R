@@ -20,7 +20,7 @@ cinque<-c("ATOH1","LEF1","GFI1","DLL1","DEFA5","DEFA6","OLFM4","NOTCH1","NOTCH2"
 #cinque<-read.table(file = gene_list,sep=",",header = FALSE)
 #cinque<-cinque$V1
 #cinque<-intersect(cinque, colnames(dato_t))
-
+cinque<-intersect(cinque, colnames(dato_t))
 cinque_df<-dato_t[,cinque]
 
 write.table(cinque_df,file=out,sep=',',quote=FALSE)

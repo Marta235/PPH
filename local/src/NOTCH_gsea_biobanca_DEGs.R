@@ -1,13 +1,17 @@
 library(circlize)
 library(ComplexHeatmap)
+# rigira il 02/10/2025 includendo i resistenti genetici
+
 # xeno cet vs NT (S defined as OR in vivo, no genetic resistances here):
 #gsea_path <- '/mnt/trcanmed/snaketree/prj/DE_RNASeq/dataset/Biodiversa_up5starOK_cetuxi_treat_PDX_S/GSEA_results_C2_treat_cutoff0.05-cetuxi.vs.NT.tsv'
 # pdo cet vs NT (S defined as OR in vivo, no genetic resistances here):
 #gsea_path_cloni <- '/mnt/trcanmed/snaketree/prj/DE_RNASeq/dataset/Biodiversa_up5starOK_cetuxi_treat_PDO_72h_S/GSEA_results_C2_treat_cutoff0.05-cetuxi.vs.NT.tsv'
 # xeno 4wt/noampl OR vs PD:
-gsea_path <- '/mnt/trcanmed/snaketree/prj/DE_RNASeq/dataset/cetuxi_resp_4wt_PDX/GSEA_results_C2_cetuxi_cutoff0.05-res.vs.sens.tsv'
+#gsea_path <- '/mnt/trcanmed/snaketree/prj/DE_RNASeq/dataset/cetuxi_resp_4wt_PDX/GSEA_results_C2_cetuxi_cutoff0.05-res.vs.sens.tsv'
+gsea_path <- '/mnt/trcanmed/snaketree/prj/DE_RNASeq/dataset/cetuxi_resp_all_pdx/GSEA_results_C2_cetuxi_cutoff0.05-res.vs.sens.tsv'
 # pdo 4wt/noampl OR vs PD (like before response defined in vivo): 
-gsea_path_cloni <- '/mnt/trcanmed/snaketree/prj/DE_RNASeq/dataset/cetuxi_resp_4wt_PDO/GSEA_results_C2_cetuxi_cutoff0.05-res.vs.sens.tsv'
+#gsea_path_cloni <- '/mnt/trcanmed/snaketree/prj/DE_RNASeq/dataset/cetuxi_resp_4wt_PDO/GSEA_results_C2_cetuxi_cutoff0.05-res.vs.sens.tsv'
+gsea_path_cloni <- '/mnt/trcanmed/snaketree/prj/DE_RNASeq/dataset/cetuxi_resp_all_pdo/GSEA_results_C2_cetuxi_cutoff0.05-res.vs.sens.tsv'
 
 # sfrutto codice di Sofia per mostrare Xeno e Pdo insieme, Xeno prendono il posto dei cas9 e Pdo dei cloni
 data_gsea<-read.table(gsea_path,header = TRUE,sep='\t')
@@ -98,8 +102,11 @@ draw(ht_nes + ht_pval, heatmap_legend_side = "right")
 
 ## volcano HES1 just for...
 library(DESeq2)
+library(ggrepel)
 #load('/mnt/trcanmed/snaketree/prj/DE_RNASeq/dataset/cetuxi_resp_4wt_PDX/cetuxi_cutoff0.05-res.vs.sens.deseq2.tsv_DESeq.Rdata')
-load('/mnt/trcanmed/snaketree/prj/DE_RNASeq/dataset/cetuxi_resp_4wt_PDO/cetuxi_cutoff0.05-res.vs.sens.deseq2.tsv_DESeq.Rdata')
+#load('/mnt/trcanmed/snaketree/prj/DE_RNASeq/dataset/cetuxi_resp_4wt_PDO/cetuxi_cutoff0.05-res.vs.sens.deseq2.tsv_DESeq.Rdata')
+#load('/mnt/trcanmed/snaketree/prj/DE_RNASeq/dataset/cetuxi_resp_all_pdo/cetuxi_cutoff0.05-res.vs.sens.deseq2.tsv_DESeq.Rdata')
+load('/mnt/trcanmed/snaketree/prj/DE_RNASeq/dataset/cetuxi_resp_all_pdx/cetuxi_cutoff0.05-res.vs.sens.deseq2.tsv_DESeq.Rdata')
 
 plot_volcano <- function(resnona, alpha, lfc, outfile, title, wanted) {
   for (i in rownames(resnona)) {
@@ -124,7 +131,7 @@ plot_volcano <- function(resnona, alpha, lfc, outfile, title, wanted) {
 }
 plot_volcano(resnona_df, alpha, lfc, volcano, title, 'H_HES1')
 
-# investigation on magnitude of deg > in pdos even if with smaller n.
+# investigation on magnitude of deg > in pdos even if with smaller n.   UUUH GUSTOSO
 #egrassi@godot:/mnt/trcanmed/snaketree/prj/DE_RNASeq/dataset/cetuxi_resp_4wt_PDO$ grep -f <(sed 1d samples_data | cut -f 2 |sort | uniq) < /mnt/trcanmed/snaketree/prj/pdxopedia/local/share/data/treats/last_march2024/last_cet_march2024.txt  > os
 #egrassi@godot:/mnt/trcanmed/snaketree/prj/DE_RNASeq/dataset/cetuxi_resp_4wt_PDX$ grep -f <(sed 1d samples_data | cut -f 2 |sort | uniq) < /mnt/trcanmed/snaketree/prj/pdxopedia/local/share/data/treats/last_march2024/last_cet_march2024.txt  > xs
 

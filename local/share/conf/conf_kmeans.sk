@@ -35,7 +35,41 @@ SAMPLES=['CRC0327_cetux_2',
 'CRC0322LMX_CTX1w_2_sg',
 'CRC0322LMX_NT1w_1_singleron0722',
 'CRC0322LMX_NT1w_2_sg']
+SAMPLES_INVIVO=['CRC0322LMX_CTX1w_1_singleron0722',
+'CRC0322LMX_NT1w_1_singleron0722','CRC0322LMX_CTX1w_2_sg','CRC0322LMX_NT1w_2_sg','CRC1502_cetux_1',
+'CRC0322_NT_1_3000','CRC0069_CTX72h_1','CRC0542_NT72h_1','CRC0069_NT72h_1','CRC0327_NT_2']
 
+SAMPLES_GAE= [
+    "KUL01-B", "KUL01-N", "KUL01-T",
+    "KUL19-B", "KUL19-N", "KUL19-T",
+    "KUL21-B", "KUL21-N", "KUL21-T",
+    "KUL28-B", "KUL28-N", "KUL28-T",
+    "KUL30-B", "KUL30-N", "KUL30-T",
+    "KUL31-B", "KUL31-N", "KUL31-T",
+    "SMC01-N", "SMC01-T",
+    "SMC02-N", "SMC02-T",
+    "SMC03-N", "SMC03-T",
+    "SMC04-N", "SMC04-T",
+    "SMC05-N",
+    "SMC06-N", "SMC06-T",
+    "SMC07-N", "SMC07-T",
+    "SMC08-N", "SMC08-T",
+    "SMC09-N", "SMC09-T",
+    "SMC10-N", "SMC10-T",
+    "SMC11-T",
+    "SMC14-T",
+    "SMC15-T",
+    "SMC16-T",
+    "SMC17-T",
+    "SMC18-T",
+    "SMC19-T",
+    "SMC20-T",
+    "SMC21-T",
+    "SMC22-T",
+    "SMC23-T",
+    "SMC24-T",
+    "SMC25-T",
+]
 
 
 
