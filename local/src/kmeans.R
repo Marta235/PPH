@@ -53,7 +53,7 @@ main <- function() {
 
   cinque_df <- dato_t[, presenti, drop = FALSE]
 
-  # kmeans (se serve: scale(cinque_df))
+
   set.seed(123)
   cl <- kmeans(cinque_df, centers = 2)
 
@@ -73,8 +73,19 @@ main <- function() {
 
   write.table(posteriors, file = kmeans_out, sep = ',', quote = FALSE, row.names = FALSE)
 }
+main <- function() {
+
+  con <- file(log_f, open = "wt")
+  sink(con)                          # stdout
+  sink(con, type = "message")        # stderr
+  on.exit({
+    sink(type = "message")
+    while (sink.number() > 0) sink()
+    close(con)
+  }, add = TRUE)
 
 main()
+
 
 
 

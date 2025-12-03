@@ -5,6 +5,7 @@ library('psych')
 library(pheatmap)
 library(dplyr)
 library(viridis)
+library(ggrastr)
 
 library(wesanderson)
 
@@ -23,14 +24,15 @@ print(colnames(dato))
 #metagene_cinque[metagene_cinque<sat_min]<-sat_min
 #write.csv(metagene_cinque, meta_ou, row.names=TRUE)
 
-chords<-read.table(file = umap,row.names = 1,sep=",",header = TRUE)
+chords<-read.table(file = umap,row.names = 'cell_id',sep=",",header = TRUE)
 colori<-rev(rainbow(10))[3:10]
 data<-merge(chords,dato,by='row.names')
+print(head(data))
 
 pdf(plot_out)
 for (gene in colnames(dato)){
-j<-ggplot(data, aes(x=x, y=y,color=data[[gene]])) + 
-geom_point(size=1)+scale_color_gradientn(colours = colori)+
+j<-ggplot(data, aes(x=umap1, y=umap2,color=data[[gene]])) + 
+rasterize(geom_point(size=1),dpi=300)+scale_color_gradientn(colours = colori)+
 labs(title = gene, color=gene)+xlab('umap1')+ylab('umap2')+
 theme_classic()+theme(axis.ticks.x = element_blank(),axis.text.x = element_blank(),axis.ticks.y = element_blank(),axis.text.y = element_blank())
 print(j)

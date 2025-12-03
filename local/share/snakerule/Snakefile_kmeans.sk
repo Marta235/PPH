@@ -1,26 +1,41 @@
 include : "conf.sk"
 #calculate kmeans on ff genes 
-rule calculate_kmeans_2:
-    input:data=DATA_DIR+'/saver_mat/filtered_annotated_saver_ribomito_{sample}_log2_pc1_cpm.csv'
-    output:out='{sample}/{sample}_kmeans.csv'
-    log: log="{sample}/{sample}_kmeans_log.log"
-    script:SRC_DIR+'/kmeans.R'
+# rule calculate_kmeans_2:
+#     input:data=DATA_DIR+'/saver_mat/filtered_annotated_saver_ribomito_{sample}_log2_pc1_cpm.csv'
+#     output:out='{sample}/{sample}_kmeans.csv'
+#     log: log="{sample}/{sample}_kmeans_log.log"
+#     script:SRC_DIR+'/kmeans.R'
 
-#calculate cell's silhouette score, save as filtered all cells belonging to cluster paneth with silhouette score< 0
-rule silhuette_filtering:
-    input:data=DATA_DIR+'/saver_mat/filtered_annotated_saver_ribomito_{sample}_log2_pc1_cpm.csv',clusters='{sample}/{sample}_kmeans.csv'
-    output:out='{sample}/{sample}_kmeans_filtered.csv'
-    log: log="{sample}/{sample}_kmeans_log_filtered.log"
-    script:SRC_DIR+'/silhouette.R'
-rule all_kmeans_filtered:
-    input:expand('{sample}/{sample}_kmeans_filtered.csv', sample=SAMPLES)
+# #calculate cell's silhouette score, save as filtered all cells belonging to cluster paneth with silhouette score< 0
+# rule silhuette_filtering:
+#     input:data=DATA_DIR+'/saver_mat/filtered_annotated_saver_ribomito_{sample}_log2_pc1_cpm.csv',clusters='{sample}/{sample}_kmeans.csv'
+#     output:out='{sample}/{sample}_kmeans_filtered.csv'
+#     log: log="{sample}/{sample}_kmeans_log_filtered.log"
+#     script:SRC_DIR+'/silhouette.R'
+# rule all_kmeans_filtered:
+#     input:expand('{sample}/{sample}_kmeans_filtered.csv', sample=SAMPLES)
+
+rule plot_percentage_paneth_cc_cake:
+    input:clust='{sample}/{sample}_kmeans_filtered.csv',cc=DATA_DIR+'/cc_data/filtered_annotated_saver_ribomito_{sample}_cellCycle.csv'
+    output:plot_out='paneth_percentage_cake/{sample}_plot_percentage_cc.pdf'
+    log:log='paneth_percentage/{sample}_plot_percentage_cc.log'
+    script:SRC_DIR+'/plot_percentage_paneth_cc_cake.R'
+rule all_plot_percentage_paneth_cc_cake:    
+    input: expand("paneth_percentage_cake/{sample}_plot_percentage_cc.pdf", sample=SAMPLES)
+rule plot_percentage_paneth_cc_cake_invivo:
+    input:clust='{sample}/{sample}_kmeans_filtered.csv',cc=DATA_DIR+'/cc_data/filtered_annotated_{sample}_cellCycle.csv'
+    output:plot_out='paneth_percentage_cake/{sample}_plot_percentage_cc.pdf'
+    log:log='paneth_percentage/{sample}_plot_percentage_cc.log'
+    script:SRC_DIR+'/plot_percentage_paneth_cc_cake.R'
+rule all_plot_percentage_paneth_cc_cake_invivo:    
+    input: expand("paneth_percentage_cake/{sample}_plot_percentage_cc.pdf", sample=SAMPLES_INVIVO)
 
 rule dataset_ff:
     input: data=DATA_DIR+'/saver_mat/filtered_annotated_saver_ribomito_{sample}_log2_pc1_cpm.csv'
-    output: out='useful_genes_datasets/{sample}_log2cpm.csv'
+    output: out='popular_genes_datasets/{sample}_log2cpm.csv'
     script: SRC_DIR+'/produce_usefull_genes_dataset.R'
 rule all_ff:    
-    input: expand("useful_genes/{sample}_log2cpm.csv", sample=SAMPLES)
+    input: expand("popular_genes_datasets/{sample}_log2cpm.csv", sample=SAMPLES)
 
 rule calculate_umap:
     input:data=DATA_DIR+'/saver_mat/filtered_annotated_saver_ribomito_{sample}_log2_pc1_cpm.csv'
@@ -28,3 +43,39 @@ rule calculate_umap:
     script:SRC_DIR+'/compute_umap.R'
 rule all_umap:
     input:expand('{sample}/{sample}_umap.csv', sample=SAMPLES)
+
+rule umap_metagene:
+    input: umap='{sample}/{sample}_umap.csv',data='popular_genes_datasets/{sample}_log2cpm.csv'
+    output:plot_out='metagene_{sat_min}_{sat_max}/{sample}_umap_metagene.pdf'
+    script:SRC_DIR+'/umap_metagene.R'
+rule all_umap_metagene:
+    input: expand("metagene_{sat_min}_{sat_max}/{sample}_umap_metagene.pdf", sample=SAMPLES,sat_max=9,sat_min=1)
+
+rule umap_gaetano:
+    input: umap='{sample}/{sample}_umap.csv',data_gae='data_gae/{sample}_prediction.csv'
+    output:plot_out='gaetano/{sample}_umap_gaetano.pdf'
+    script:SRC_DIR+'/umap_gaetano.R'
+rule all_umap_gaetano:  
+    input: expand("gaetano/{sample}_umap_gaetano.pdf", sample=SAMPLES_INVIVO)
+
+rule umap_kmeans:
+    input: umap='{sample}/{sample}_umap.csv',data_kmeans='{sample}/{sample}_kmeans_filtered.csv'
+    output:plot_out='kmeans/{sample}_umap_kmeans.pdf'
+    script:SRC_DIR+'/umap_kmeans.R'
+rule all_umap_kmeans:  
+    input: expand("kmeans/{sample}_umap_kmeans.pdf", sample=SAMPLES)
+
+rule calculate_kmeans_2_gae:
+    input:data=DATA_DIR+'/saver_mat_gae/filtered_annotated_saver_ribomito_{sample}_log2_pc1_cpm.csv'
+    output:out='kmeans_pazienti/{sample}/{sample}_kmeans.csv'
+    log: log="kmeans_pazienti/{sample}/{sample}_kmeans_log.log"
+    script:SRC_DIR+'/kmeans.R'
+rule all_kmeans_gae:
+    input:expand('kmeans_pazienti/{sample}/{sample}_kmeans.csv', sample=SAMPLES_GAE)
+
+rule umap_genes:
+    input: umap='{sample}/{sample}_umap.csv',data='popular_genes_datasets/{sample}_log2cpm.csv'
+    output:plot_out='genes_umap/{sample}_umap_genes.pdf'
+    script:SRC_DIR+'/umap_genivari.R'
+rule all_umap_genes:  
+    input: expand("genes_umap/{sample}_umap_genes.pdf", sample=SAMPLES)

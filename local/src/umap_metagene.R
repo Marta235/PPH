@@ -5,6 +5,7 @@ library('psych')
 library(pheatmap)
 library(dplyr)
 library(viridis)
+library(ggrastr)
 
 library(wesanderson)
 
@@ -33,16 +34,16 @@ metagene_cinque[metagene_cinque>sat_max]<-sat_max
 metagene_cinque[metagene_cinque<sat_min]<-sat_min
 #write.csv(metagene_cinque, meta_ou, row.names=TRUE)
 
-chords<-read.table(file = umap,row.names = 1,sep=",",header = TRUE)
+chords<-read.table(file = umap,row.names = 'cell_id',sep=",",header = TRUE)
+print(head(metagene_cinque))
+print(rownames(chords))
 colori<-rev(rainbow(10))[3:10]
 data<-merge(chords,metagene_cinque,by='row.names')
-j<-ggplot(data, aes(x=x, y=y,color=metagene)) + 
-  geom_point(size=1)+scale_color_gradientn(colours = colori,limits=c(sat_min,sat_max))+#+scale_color_viridis(limits=c(0,10),direction = -1)
-labs(title = "metagene", color="metagene")+xlab('umap1')+ylab('umap2')+
+
+j<-ggplot(data, aes(x=umap1, y=umap2,color=metagene)) + 
+rasterize(geom_point(size=0.3),dpi=300)+scale_color_gradientn(colours = colori)+#+scale_color_viridis(limits=c(0,10),direction = -1)
+labs(color="PCL metagene")+xlab('UMAP1')+ylab('UMAP2')+
 theme_classic()+theme(axis.ticks.x = element_blank(),axis.text.x = element_blank(),axis.ticks.y = element_blank(),axis.text.y = element_blank())
 
 #fine <- ggarrange( p,k, ncol = 2, common.legend = FALSE)
-ggsave(plot_out, plot=j, width=90, height=90, units="mm")
-pdf(plot_out)
-print(j)
-graphics.off()
+ggsave(plot_out, plot=j, width=50, height=50, units="mm")
