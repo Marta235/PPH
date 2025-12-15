@@ -16,16 +16,6 @@ input      <- snakemake@input[['data']]
 kmeans_out <- snakemake@output[['out']]
 log_f      <- snakemake@log[['log']]
 
-main <- function() {
-  # apri sink per stdout e stderr (message/warning)
-  con <- file(log_f, open = "wt")
-  sink(con)                          # stdout
-  sink(con, type = "message")        # stderr
-  on.exit({
-    sink(type = "message")
-    while (sink.number() > 0) sink()
-    close(con)
-  }, add = TRUE)
 
   dato   <- read.table(file = input, row.names = 1, sep = ",", header = TRUE)
   dato_t <- transpose(dato)
@@ -51,29 +41,23 @@ main <- function() {
     return(invisible(NULL))   # esci pulito: on.exit chiuderà i sink
   }
 
-  cinque_df <- dato_t[, presenti, drop = FALSE]
+cinque_df <- dato_t[, presenti, drop = FALSE]
 
 
-  set.seed(123)
-  cl <- kmeans(cinque_df, centers = 2)
+set.seed(123)
+cl <- kmeans(cinque_df, centers = 2)
 
-  meta_mu <- apply(cl$centers, 1, geometric.mean)
-  ordine  <- order(unlist(meta_mu))
-  ordinate <- c('Others','Paneth')
+meta_mu <- apply(cl$centers, 1, geometric.mean)
+ordine  <- order(unlist(meta_mu))
+ordinate <- c('Others','Paneth')
 
-  final_ordinate <- c()
-  for (i in seq(1,2)) final_ordinate[ordine[i]] <- ordinate[i]
+final_ordinate <- c()
+for (i in seq(1,2)) final_ordinate[ordine[i]] <- ordinate[i]
 
-  cluster_id <- cl$cluster
-  isPaneth <- vapply(cluster_id, function(el) final_ordinate[el], character(1))
-  posteriors <- data.frame(cluster_id = as.numeric(cluster_id), isPaneth = isPaneth)
-
-  conteggio <- table(posteriors$isPaneth)
-  print(conteggio)
-
-  write.table(posteriors, file = kmeans_out, sep = ',', quote = FALSE, row.names = FALSE)
-}
-main <- function() {
+cluster_id <- cl$cluster
+isPaneth <- vapply(cluster_id, function(el) final_ordinate[el], character(1))
+posteriors <- data.frame(cluster_id = as.numeric(cluster_id), isPaneth = isPaneth)
+main <- function(log_f) {
 
   con <- file(log_f, open = "wt")
   sink(con)                          # stdout
@@ -83,8 +67,13 @@ main <- function() {
     while (sink.number() > 0) sink()
     close(con)
   }, add = TRUE)
+  conteggio <- table(posteriors$isPaneth)
+  print(conteggio)
+  } 
 
-main()
+write.table(posteriors, file = kmeans_out, sep = ',', quote = FALSE, row.names = TRUE)
+
+main(log_f)
 
 
 

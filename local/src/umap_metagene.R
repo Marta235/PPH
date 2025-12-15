@@ -41,9 +41,9 @@ colori<-rev(rainbow(10))[3:10]
 data<-merge(chords,metagene_cinque,by='row.names')
 
 j<-ggplot(data, aes(x=umap1, y=umap2,color=metagene)) + 
-rasterize(geom_point(size=0.3),dpi=300)+scale_color_gradientn(colours = colori)+#+scale_color_viridis(limits=c(0,10),direction = -1)
+rasterize(geom_point(size=0.01),dpi=300)+scale_color_gradientn(colours = colori)+#+scale_color_viridis(limits=c(0,10),direction = -1)
 labs(color="PCL metagene")+xlab('UMAP1')+ylab('UMAP2')+
-theme_classic()+theme(axis.ticks.x = element_blank(),axis.text.x = element_blank(),axis.ticks.y = element_blank(),axis.text.y = element_blank())
+theme_classic()+theme(axis.ticks.x = element_blank(),axis.text.x = element_blank(),axis.ticks.y = element_blank(),axis.text.y = element_blank(),legend.position = "none")
 
 #fine <- ggarrange( p,k, ncol = 2, common.legend = FALSE)
-ggsave(plot_out, plot=j, width=50, height=50, units="mm")
+ggsave(plot_out, plot=j, width=58, height=58, units="mm")

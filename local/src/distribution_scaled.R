@@ -31,9 +31,18 @@ meta_nt$Treatment <- "Not Treated"
 meta_cet$Treatment<- "Cetuximab"
 
 
-# Combina i due dataframe
+
 df_combined <- rbind(meta_cet, meta_nt)
-print(head(df_combined))
+cet<-meta_cet$x
+nt<-meta_nt$x
+
+library(kSamples)
+test <- ks.test(cet, nt)
+sink(snakemake@log[['log']])   
+cat("KS test\n")
+cat("======================\n\n")
+print(test)
+sink()
 
 
 x_min <- 0
