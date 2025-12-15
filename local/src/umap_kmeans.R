@@ -28,28 +28,40 @@ chords <- read.table(file = umap, row.names = 'cell_id', sep = ",", header = TRU
 # 3) Un solo merge è sufficiente
 data <- merge(chords, dato, by = "row.names")
 
-# Giusto per controllo:
-print(unique(data$prediction))
-print(levels(data$prediction))  # qui NON ci deve essere 'filtered'
-
+dim_pallini=0.01
 # 4) Plot
-j <- ggplot(data, aes(x = umap1, y = umap2, color = prediction)) + 
-  rasterize(geom_point(size = 0.1), dpi = 300) +
-  xlab("UMAP1") +
-  ylab("UMAP2") +
+j <- ggplot() +
+  rasterize(
+    geom_point(
+      data = data[data$prediction == "Others", ],
+      aes(x = umap1, y = umap2, color = prediction),
+      size = dim_pallini
+    ), dpi = 300
+  ) +
+  rasterize(
+    geom_point(
+      data = data[data$prediction == "PCL cell", ],
+      aes(x = umap1, y = umap2, color = prediction),
+      size = dim_pallini
+    ), dpi = 300
+  ) +
   scale_color_manual(
     name = '',
     values = c(
-      "PCL cell" = "#1D7937",
-      "Others"   = "#772B84"
+      "PCL cell" = "#099963",
+      "Others"   = "#76069A"
     )
   ) +
+  xlab("UMAP1") + ylab("UMAP2") +
   theme_classic() +
   theme(
     axis.ticks.x = element_blank(),
     axis.text.x  = element_blank(),
     axis.ticks.y = element_blank(),
-    axis.text.y  = element_blank(),legend.position = "none")
+    axis.text.y  = element_blank(),
+    #legend.position = "none"
+  )
+
   
 
-ggsave(plot_out, plot = j, width = 100, height = 100, units = "mm")
+ggsave(plot_out, plot = j, width = 58, height = 58, units = "mm")
