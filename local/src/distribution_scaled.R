@@ -36,17 +36,18 @@ df_combined <- rbind(meta_cet, meta_nt)
 cet<-meta_cet$x
 nt<-meta_nt$x
 
-library(kSamples)
-test <- ks.test(cet, nt)
+#library(kSamples)
+#test <- ks.test(cet, nt)
 sink(snakemake@log[['log']])   
 cat("KS test\n")
 cat("======================\n\n")
-print(test)
+#print(test)
 sink()
 
 
 x_min <- 0
-x_max <- ceiling(max(df_combined$x))
+#x_max <- ceiling(max(df_combined$x))
+x_max<-12
 
 
 breaks_x <- pretty(c(x_min, x_max), n = 5) 
@@ -107,3 +108,4 @@ ggsave(output_plot, plot=a, width=100, height=100, units="mm")
 
 
 
+#save.image(paste0(output_plot, '.Rdata'))

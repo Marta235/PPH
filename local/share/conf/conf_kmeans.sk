@@ -38,6 +38,11 @@ SAMPLES_NI=['CRC0327_cetux_2',
 'CRC0069_NT72h_1',
 'CRC0069_CTX72h_1']
 
+NI_CET=[x for x in SAMPLES_NI if not re.search('NT',x)]
+NI_NT=[x for x in SAMPLES_NI if re.search('NT',x)]
+NI_CET.sort()
+NI_NT.sort()
+
 KRAS=['CRC1502_cetux_1','CRC1502_NT_1','CRC1620_cetux_1','CRC1620_NT_1']
 
 SAMPLES_INVIVO_LMO=['CRC0322LMO_CTX72h_1_singleron0722',

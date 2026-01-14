@@ -135,7 +135,7 @@ rule umap_genes_ingested:
     output:plot_out='genes_umap_ingested/{sample}_umap_genes.pdf'
     script:SRC_DIR+'/umap_genivari.R'
 rule all_umap_genes_ingested:  
-    input: expand("genes_umap_ingested/{sample}_umap_genes.pdf", sample=SAMPLES)
+    input: expand("genes_umap_ingested/{sample}_umap_genes.pdf", sample=SAMPLES_INVIVO)
 
 rule find_marker_wilcoxon:
     conda:"bbknn_env.yml" # ideally also yaml should be put in local/share/envs or similar
@@ -147,11 +147,11 @@ rule find_marker_wilcoxon:
 
 rule gsea_analysis_costumized_:
     input: gene_res_freq = "markers/{sample}_Paneth_markers.tsv"
-    output: GSEA_r = "signature_paperPaneth/GSEA_intestine.{sample}_Paneth.tsv", GSEA_ridgeplot = "signature_paperPaneth/GSEA_intestine.{sample}_Paneth.pdf"
+    output: GSEA_r = "signature_paperHaber/GSEA_intestine.{sample}_Paneth.tsv", GSEA_ridgeplot = "signature_paperHaber/GSEA_intestine.{sample}_Paneth.pdf"
     script: SRC_DIR+'/GSEA_norkin.R'
 
 rule all_gsea_analysis_costumized:
-    input:expand("signature_paperPaneth/GSEA_intestine.{sample}_Paneth.tsv", sample=KRAS)
+    input:expand("signature_paperHaber/GSEA_intestine.{sample}_Paneth.tsv", sample=KRAS)
 
 def find_metagene_2samples(wildcards):
     lista=[DATA_DIR+'/metagene/{sample_cet}_metagene.csv',
@@ -162,6 +162,15 @@ rule plot_bimodal_density_scaled:
     output:out='distribution_scaled/{sample_cet}vs{sample_nt}_dist.pdf'
     log:log="distribution_scaled_log/{sample_cet}vs{sample_nt}_dist.log"
     script: SRC_DIR+'/distribution_scaled.R'
+
+rule plot_bimodal_density_scaled_2y:
+    input:c=find_metagene_2samples
+    output:out='distribution_scaled_2y/{sample_cet}vs{sample_nt}_dist.pdf'
+    log:log="distribution_scaled_2y/{sample_cet}vs{sample_nt}_dist.log"
+    script: SRC_DIR+'/distribution_scaled_twoY.R'
+
+rule all_bimodal_density_scaled_2y:
+    input: expand("distribution_scaled_2y/{sample_cet}vs{sample_nt}_dist.pdf", zip, sample_cet=NI_CET, sample_nt=NI_NT)
 
 rule plot_dist_paneth:
     input:metagene=DATA_DIR+'/metagene/{sample}_metagene.csv', cluster='{sample}/{sample}_kmeans_filtered.csv'
@@ -181,4 +190,19 @@ rule all_umap_HES1_igested:
 rule plot_dist_HES1:
     input:geni_cetux='popular_genes_datasets/{sample_cetux}_log2cpm.csv', cluster_cetux='{sample_cetux}/{sample_cetux}_kmeans_filtered.csv',geni_nt='popular_genes_datasets/{sample_nt}_log2cpm.csv', cluster_nt='{sample_nt}/{sample_nt}_kmeans_filtered.csv'
     output:out='distribution_HES1/{sample_cetux}_vs_{sample_nt}_HES1_dist.pdf'
+    script:SRC_DIR+'/distribution_HES1_mixed.R'
+rule plot_dist_HES1_onlyOthers:
+    input:geni_cetux='popular_genes_datasets/{sample_cetux}_log2cpm.csv', cluster_cetux='{sample_cetux}/{sample_cetux}_kmeans_filtered.csv',geni_nt='popular_genes_datasets/{sample_nt}_log2cpm.csv', cluster_nt='{sample_nt}/{sample_nt}_kmeans_filtered.csv'
+    output:out='distribution_HES1_onlyOthers/{sample_cetux}_vs_{sample_nt}_HES1_dist.pdf'
     script:SRC_DIR+'/distribution_HES1.R'
+
+rule plot_bimodal_hist:
+    input:c=find_metagene_2samples
+    output:out='hist_cetux_nt/{sample_cet}vs{sample_nt}_dist.pdf'
+    log:log="distribution_scaled_log/{sample_cet}vs{sample_nt}_dist.log"
+    script: SRC_DIR+'/hist_prova.R'
+
+rule plot_hist_HES1_onlyOthers:
+    input:geni_cetux='popular_genes_datasets/{sample_cetux}_log2cpm.csv', cluster_cetux='{sample_cetux}/{sample_cetux}_kmeans_filtered.csv',geni_nt='popular_genes_datasets/{sample_nt}_log2cpm.csv', cluster_nt='{sample_nt}/{sample_nt}_kmeans_filtered.csv'
+    output:out='hist_HES1_onlyOthers/{sample_cetux}_vs_{sample_nt}_HES1_dist.pdf'
+    script:SRC_DIR+'/hist_HES1.R'
