@@ -31,29 +31,25 @@ df_combined<-merge(meta,cluster,by='row.names')
 print(head(df_combined))
 rownames(df_combined)<-df_combined$Row.names
 df_combined$Row.names<-NULL
-df_combined<-df_combined[df_combined$isPaneth!='filtered',]
-df_combined$isPaneth[df_combined$isPaneth=='Paneth']<-'PCL cells'
+#df_combined<-df_combined[df_combined$isPaneth!='filtered',]
+df_combined$isPaneth[df_combined$isPaneth=='Paneth']<-'SPC'
+df_combined$isPaneth[df_combined$isPaneth=='Others']<-'NSPC'
+df_combined$isPaneth[df_combined$isPaneth=='filtered']<-'NSPC'
 
-# Combina i due dataframe
 
 
-# Crea il grafico
 x_min <- 0
 x_max <- ceiling(max(df_combined$x))
-print('SUKA')
-# Crea una sequenza di tick breaks, inclusi il valore minimo e massimo
 breaks_x <- pretty(c(x_min, x_max), n = 5) 
 x_max<-max(breaks_x)
-print(breaks_x) # "pretty" genera una serie di break esteticamente piacevoli
-print(x_max)
 
-df_combined$isPaneth <- factor(df_combined$isPaneth, levels = c("PCL cells", "Others"), labels = c("PCL cells", "Others"))
+df_combined$isPaneth <- factor(df_combined$isPaneth, levels = c("SPC", "NSPC"), labels = c("SPC", "NSPC"))
 
-
+TOTCELL<-nrow(df_combined)
 a <- ggplot(df_combined, aes(x = x, color = isPaneth)) +
-  geom_density(aes(y = after_stat(count * 0.05)), position = "identity", bw = 0.05, size = 1) +
+  geom_density(aes(y = after_stat(count/TOTCELL)), position = "identity", bw = 0.05, size = 1)+
   scale_color_manual(name = "Cluster", 
-                     values = c("Others" = "#76069A", "PCL cells" = "#099963")) +
+                     values = c("NSPC" = "#76069A", "SPC" = "#099963")) +
   scale_x_continuous(expand = c(0, 0), limits = c(x_min, x_max), breaks = breaks_x) +  # Specifica i tick manualmente
   ggtitle("Metagene Distribution") +
   theme_minimal() +
@@ -72,26 +68,22 @@ ggp <- ggplot_build(a)
 data <- ggp$data[[1]]
 
 data$y_orig <- data$y
-range01 <- function(x){(x-min(x))/(max(x)-min(x))}
-data$y_scaled <- range01(data$y_orig)
 
-maxy <- ceiling(max(data$y_scaled))
-#maxy <- ceiling(max(ggp$data[[1]]$count * 0.05) )# [[2]] if histogram is removed
-breaks_y <- pretty(c(0, maxy), n = 5) 
+maxy <- max(data$y_orig)
+print('=============================================')
+print(maxy)
+
+breaks_y <- pretty(c(0, maxy), n = 4) 
 maxy<-max(breaks_y)
-#labels_y <- sprintf("%.2f", breaks_y / maxy)
-#print(maxy)
-#print(breaks_y)
-#a<-a+scale_y_continuous(expand = c(0, 0), limits = c(0, maxy),breaks=breaks_y,labels=labels_y) +
-#  labs(y = "Relative cells number (A.U.)", x = "Metagene")
 
-data$coloripaneth <- ifelse(data$colour == "#76069A", 'Others', 'PCL cells')
+data$coloripaneth <- ifelse(data$colour == "#76069A", 'NSPC', 'SPC')
 
-a <- ggplot(data=data, aes(x=x, y=y_scaled, color=coloripaneth))+geom_line()+
+TOTCELL<-nrow(df_combined)
+a<-ggplot(df_combined, aes(x = x, color = isPaneth)) +
+  geom_density(aes(y = after_stat(count/TOTCELL)), position = "identity", bw = 0.05, size = 1) +
   scale_color_manual(name = "Cluster", 
-                     values = c("Others" = "#76069A", "PCL cells" = "#099963")) +
-  scale_x_continuous(expand = c(0, 0), limits = c(x_min, x_max), breaks = breaks_x) +  # Specifica i tick manualmente
-  ggtitle("Metagene Distribution") +
+                     values = c("NSPC" = "#76069A", "SPC" = "#099963")) +
+  scale_x_continuous(expand = c(0, 0), limits = c(x_min, x_max), breaks = breaks_x) + 
   theme_minimal() +
   theme(panel.background = element_rect(fill = "white", color = NA),  # Sfondo bianco
         panel.grid.major = element_blank(),                          # Rimuovi griglie maggiori
@@ -100,9 +92,10 @@ a <- ggplot(data=data, aes(x=x, y=y_scaled, color=coloripaneth))+geom_line()+
         axis.ticks = element_line(color = "black"),                  # Tick marks neri
         axis.ticks.length = unit(0.2, "cm"),                         # Lunghezza dei tick
         axis.title.x = element_text(size = 12),                      # Etichetta asse X
-        axis.title.y = element_text(size = 12))+
-        scale_y_continuous(expand = c(0, 0), limits = c(0, maxy),breaks=breaks_y) +
-  labs(y = "Relative cells number (A.U.)", x = "Metagene")                      # Etichetta asse Y
+        axis.title.y = element_text(size = 12))  +                    # Etichetta asse Y
+guides(color = guide_legend(override.aes = list(linetype = 1, size = 1, shape = NA, fill = NA)))+
+        scale_y_continuous(expand = c(0, 0),breaks=breaks_y,limits=c(0, maxy)) +
+  labs(y = "PDF* fraction of cells", x = "SPC Metagene")                      # Etichetta asse Y
   #guides(color = guide_legend(override.aes = list(linetype = 1, size = 1, shape = NA, fill = NA)))
 a <- a + theme(
   legend.position = c(0.95, 0.95),  # alto a destra

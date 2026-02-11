@@ -11,7 +11,9 @@ library(dplyr)
 library(viridis)
 library(igraph)
 library(patchwork)
+#library(ggpubr)
 
+#output_plot<-snakemake@output[[1]]
 cet_data_path<-snakemake@input$geni_cetux
 nt_data_path<-snakemake@input$geni_nt
 cet_clu_path<-snakemake@input$cluster_cetux
@@ -20,17 +22,17 @@ nt_clu_path<-snakemake@input$cluster_nt
 
 
 output_plot<-snakemake@output$out[1]
-
+#kmeans<- read.table(file = clust,row.names = 1,sep=",",header = TRUE,stringsAsFactors = FALSE)
 
 cet<- read.table(file = cet_data_path,row.names = 1,sep=",",header = TRUE,stringsAsFactors = FALSE)
 cet<-as.data.frame(cet)
-cet$Treatment<-'Cetuximab'
+cet$trattamento<-'Cetuximab'
 cluster_cet<-read.table(file = cet_clu_path,row.names = 1,sep=",",header = TRUE,stringsAsFactors = FALSE)
 cluster_cet<-as.data.frame(cluster_cet)
 
 nt<- read.table(file = nt_data_path,row.names = 1,sep=",",header = TRUE,stringsAsFactors = FALSE)
 nt<-as.data.frame(nt)
-nt$Treatment<-'Not Treated'
+nt$trattamento<-'Untreated'
 cluster_nt<-read.table(file = nt_clu_path,row.names = 1,sep=",",header = TRUE,stringsAsFactors = FALSE)
 cluster_nt<-as.data.frame(cluster_nt) 
 
@@ -41,27 +43,33 @@ df_combined<-merge(data,cluster,by='row.names')
 print(head(df_combined))
 rownames(df_combined)<-df_combined$Row.names
 df_combined$Row.names<-NULL
-df_combined[df_combined$isPaneth=='filtered',]$isPaneth<-'Others'
+df_combined<-df_combined[df_combined$isPaneth!='filtered',]
 df_combined<-df_combined[df_combined$isPaneth!='Paneth',]
-print(head(df_combined))
+
+
+# Combina i due dataframe
+
+
+# Crea il grafico
 x_min <- 0
 x_max <- ceiling(max(df_combined$HES1))
-#x_max<-12
+
 
 
 breaks_x <- pretty(c(x_min, x_max), n = 5) 
 x_max<-max(breaks_x)
 print(breaks_x) 
 
-orig <- ggplot(df_combined, aes(x = HES1, color = Treatment)) +
-  #geom_histogram(aes(fill='white'), alpha=0.3, binwidth=0.05, position = 'identity')+
+
+a <- ggplot(df_combined, aes(x = HES1, fill = trattamento)) +
+  geom_histogram( alpha=0.3, binwidth=0.05, position = 'identity')+
   
-  geom_density((aes(y=after_stat(scaled))),position = "identity", bw = 0.1, size = 0.8) +#
-  scale_color_manual(name = "Treatment", 
-                     values = c("Cetuximab" = "red", "Not Treated" = "black")) +
-  scale_x_continuous(expand = c(0, 0), limits = c(x_min, x_max), breaks = breaks_x) +  
+  #geom_density((aes(y=after_stat(scaled))),position = "identity", bw = 0.05, size = 0.8) +#
+  scale_fill_manual(name = "Treatment", 
+                     values = c("Cetuximab" = "red", "Untreated" = "black")) +
+  scale_x_continuous(expand = c(0, 0), limits = c(x_min, x_max), breaks = breaks_x) +  # Specifica i tick manualmente
     # Mantiene l'asse Y gestito automaticamente
-  labs(y = "Fraction of total cells(A.U.)", x = "Metagene")+
+  labs(y = "Fraction of total cells(A.U.)", x = "HES1")+
   theme_minimal() +
   theme(panel.background = element_rect(fill = "white", color = NA),  
         panel.grid.major = element_blank(),                          
@@ -73,35 +81,21 @@ orig <- ggplot(df_combined, aes(x = HES1, color = Treatment)) +
         axis.title.y = element_text(size = 8),legend_position = 'none')                      
   guides(color = guide_legend(override.aes = list(linetype = 1, size = 1, shape = NA, fill = NA)))
 
-# we get the axis labels from the real/not rescaled densities plot
-pdf_true_cet <- ggplot(df_combined[df_combined$Treatment=="Cetuximab",], aes(x = HES1, color = Treatment))+geom_density(bw = 0.05, size = 0.8)
-pdf_true_nt <- ggplot(df_combined[df_combined$Treatment=="Not Treated",], aes(x = HES1, color = Treatment))+geom_density(bw = 0.05, size = 0.8)
-
-density_data_nt_y <- ggplot_build(pdf_true_nt)$data[[1]]$y
-density_data_cet_y <- ggplot_build(pdf_true_cet)$data[[1]]$y
-density_scaleddata_y <- ggplot_build(orig)$data[[1]]$y
-
-get_max_breaks <- function(my_d, digits=0) {
-  maxy <- round(max(my_d), digits=digits)
-  #breaks_y <- pretty(c(0, maxy), n = 5)  # pretty gives more than 5 for the real pdf axes
-  breaks_y <- seq(0, maxy, length.out=6)
-  maxy<-max(breaks_y)
-  print(maxy)
-  print(breaks_y)
-  return(list(max=maxy, breaks=breaks_y))
-}
-
-pdf_left_nt_data <- get_max_breaks(density_data_nt_y, digits=1)
-pdf_right_cet_data <- get_max_breaks(density_data_cet_y, digits=1)
-scaled_pdf <- get_max_breaks(density_scaleddata_y)
+density_data <- ggplot_build(a)$data[[1]]
 
 
-a <- orig + scale_y_continuous(expand = c(0, 0), limits = c(0, scaled_pdf[['max']]),  breaks=scaled_pdf[['breaks']], labels=pdf_left_nt_data[['breaks']],
-                               sec.axis=dup_axis(nam='PDF for Cetuximab Treated cells', labels=pdf_right_cet_data[['breaks']])) +
-  labs(y = 'PDF for Not Treated cells', x = "HES1")
+maxy <- ceiling(max(density_data$y))# [[2]] if histogram is removed
+breaks_y <- pretty(c(0, maxy), n = 5) 
+maxy<-max(breaks_y)
+print(maxy)
+print(breaks_y)
+a<-a+scale_y_continuous(expand = c(0, 0), limits = c(0, maxy),breaks=breaks_y) +
+labs(y = "cells number", x = "HES1")+theme(,legend_position = 'none')
 a <- a + theme(
-  legend.position = c(0.95, 0.95),  # alto a destra
+  legend.position = c(1, 1),  # alto a destra
   legend.justification = c(1, 1)
 )
+
+print(head(density_data))
 
 ggsave(output_plot, plot=a, width=100, height=100, units="mm")
