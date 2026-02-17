@@ -22,9 +22,9 @@ names(geneList) <- as.character(gene_res_df[,signature])
 geneList <- sort(geneList, decreasing = TRUE)
 print(head(geneList))
 
+#/mnt/cold2/snaketree/prj/PPH/local/share/data/signature_paperPaneth/all_signature.csv
 
-
-m_t2g <- read.table('/mnt/cold2/snaketree/prj/PPH/local/share/data/signature_paperPaneth/all_signature.csv', quote = "", sep = ",", header = FALSE,stringsAsFactors = FALSE )
+m_t2g <- read.table('/mnt/cold2/snaketree/prj/PPH/local/share/data/signature_paperPaneth/human_haber.csv', quote = "", sep = ",", header = FALSE,stringsAsFactors = FALSE )
 #print(m_t2g)
 print('==============================')
 str(geneList)

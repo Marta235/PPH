@@ -241,3 +241,9 @@ rule supp_1:
     script:SRC_DIR+'/umap_metagene_supp1.R'
 rule all_supp_1:
     input: expand("ingested_suppfig1{sat_min}_{sat_max}/{sample}_umap.pdf", sample=SAMPLES,sat_max=9,sat_min=1)
+
+
+rule cluster_bbknn:
+    input:data='popular_genes_datasets/{sample}_log2cpm.csv',umap=DATA_DIR+'/umap_ingested/{sample}_umap_ingested.csv',cluster='bbknn_clusters/obs_data.csv'
+    output:plot_out='bbknn_clusters/{sample}_bbknn_ingested.pdf'
+    script:SRC_DIR+'/bbknn_clusters.R'
