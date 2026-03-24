@@ -1,0 +1,163 @@
+include : "conf.sk"
+def find_metagene_2samples(wildcards):
+    lista=[DATA_DIR+'/metagene/{sample_cet}_metagene.csv',
+            DATA_DIR+'/metagene/{sample_nt}_metagene.csv']
+    return lista 
+#FIG1
+#B==> UMAP metagene
+#C==>distribution metagene cetux nt 2y axis
+rule Fig1B:
+    input: umap=DATA_DIR+'/umap_ingested/{sample}_umap_ingested.csv', data=KMEANS_PATH+'/popular_genes_datasets/{sample}_log2cpm.csv'
+    output:plot_out='Fig.1/B/ingested_metagene_{sat_min}_{sat_max}/{sample}_umap_metagene.pdf'
+    script:SRC_DIR+'/umap_metagene.R'
+rule all_Fig1B:
+    input: expand("Fig.1/B/ingested_metagene_{sat_min}_{sat_max}/{sample}_umap_metagene.pdf", sample=SAMPLES,sat_max=9,sat_min=1)
+
+rule Fig1C:
+    input:c=find_metagene_2samples
+    output:out='Fig.1/C/{sample_cet}vs{sample_nt}_dist.pdf'
+    log:log="Fig.1/C/{sample_cet}vs{sample_nt}_dist.log"
+    script: SRC_DIR+'/distribution_scaled_twoY_v2.R'
+rule all_Fig1C:
+    input: expand("Fig.1/C/{sample_cet}vs{sample_nt}_dist.pdf", zip, sample_cet=NI_CET, sample_nt=NI_NT)
+
+#FIG2 and FIG2S
+#A==> UMAP KMEANS
+#B==> Distribution metagene 
+#C==> percentage cell cycle phases (barplot)
+#D==> radar plot
+rule Fig2A:
+    input: umap=DATA_DIR+'/umap_ingested/{sample}_umap_ingested.csv',data_kmeans=KMEANS_PATH+'/{sample}/{sample}_kmeans_filtered.csv'
+    output:plot_out='Fig.2/A/{sample}_umap_kmeans.pdf'
+    script:SRC_DIR+'/umap_kmeans.R'
+
+rule all_Fig2A:  
+    input: expand("Fig.2/A/{sample}_umap_kmeans.pdf", sample=SAMPLES)
+
+rule Fig2B:
+    input:metagene=DATA_DIR+'/metagene/{sample}_metagene.csv', cluster=KMEANS_PATH+'/{sample}/{sample}_kmeans_filtered.csv'
+    output:out='Fig.2/B/{sample}_dist.pdf'
+    script:SRC_DIR+'/distribution_paneth.R'
+rule all_Fig2B:
+    input:expand('Fig.2/B/{sample}_dist.pdf',sample=SAMPLES)
+
+######################
+
+rule plot_percentage_paneth_cc_barplot:
+    input:clust='{sample}/{sample}_kmeans_filtered.csv',cc=DATA_DIR+'/cc_data/filtered_annotated_saver_ribomito_{sample}_cellCycle.csv'
+    output:plot_out='paneth_percentage_barplot/{sample}_plot_percentage_cc.pdf'
+    log:log='paneth_percentage/{sample}_plot_percentage_cc_barplot.log'
+    script:SRC_DIR+'/plot_percentage_paneth_cc_barplot.R'
+rule all_plot_percentage_paneth_cc_barplot:    
+    input: expand("paneth_percentage_barplot/{sample}_plot_percentage_cc.pdf", sample=SAMPLES)
+rule plot_percentage_paneth_cc_cake_invivo:
+    input:clust='{sample}/{sample}_kmeans_filtered.csv',cc=DATA_DIR+'/cc_data/filtered_annotated_{sample}_cellCycle.csv'
+    output:plot_out='paneth_percentage_cake/{sample}_plot_percentage_cc.pdf'
+    log:log='paneth_percentage/{sample}_plot_percentage_cc.log'
+    script:SRC_DIR+'/plot_percentage_paneth_cc_cake.R'
+rule all_plot_percentage_paneth_cc_cake_invivo:    
+    input: expand("paneth_percentage_cake/{sample}_plot_percentage_cc.pdf", sample=SAMPLES_INVIVO)
+    
+####invivo con barplot
+rule plot_percentage_paneth_cc_barplot_invivo:
+    input:clust='{sample}/{sample}_kmeans_filtered.csv',cc=DATA_DIR+'/cc_data/filtered_annotated_{sample}_cellCycle.csv'
+    output:plot_out='paneth_percentage_barplot/{sample}_plot_percentage_cc.pdf'
+    log:log='paneth_percentage/{sample}_plot_percentage_cc_barplot.log'
+    script:SRC_DIR+'/plot_percentage_paneth_cc_barplot.R'
+rule all_plot_percentage_paneth_cc_barplot_invivo:    
+    input: expand("paneth_percentage_barplot/{sample}_plot_percentage_cc.pdf", sample=SAMPLES_INVIVO)
+
+### TEMP-MISC ELE
+
+
+rule umap_kmeans_ingested_filtered:
+    input: umap=DATA_DIR+'/umap_ingested/{sample}_umap_ingested.csv',data_kmeans='{sample}/{sample}_kmeans_filtered.csv'
+    output:plot_out='ingested_kmeans_filtered/{sample}_umap_kmeans.pdf'
+    script:SRC_DIR+'/umap_kmeans_filtered.R'
+rule all_umap_kmeans_igested_filtered:  
+    input: expand("ingested_kmeans_filtered/{sample}_umap_kmeans.pdf", sample=SAMPLES)
+rule umap_metagene_igested:
+    input: umap=DATA_DIR+'/umap_ingested/{sample}_umap_ingested.csv', data='popular_genes_datasets/{sample}_log2cpm.csv'
+    output:plot_out='ingested_metagene_{sat_min}_{sat_max}/{sample}_umap_metagene.pdf'
+    script:SRC_DIR+'/umap_metagene.R'
+rule all_umap_metagene_igested:
+    input: expand("ingested_metagene_{sat_min}_{sat_max}_nolegend/{sample}_umap_metagene.pdf", sample=SAMPLES,sat_max=9,sat_min=1)
+
+rule umap_genes_ingested:
+    input: umap=DATA_DIR+'/umap_ingested/{sample}_umap_ingested.csv',data='popular_genes_datasets/{sample}_log2cpm.csv'
+    output:plot_out='genes_umap_ingested/{sample}_umap_genes.pdf'
+    script:SRC_DIR+'/umap_genivari.R'
+rule all_umap_genes_ingested:  
+    input: expand("genes_umap_ingested/{sample}_umap_genes.pdf", sample=SAMPLES_INVIVO)
+
+rule find_marker_wilcoxon:
+    conda:"bbknn_env.yml" # ideally also yaml should be put in local/share/envs or similar
+    #container: 'docker://egrassi/godot_scanpy:latest'
+    input: data=DATA_DIR+'/saver_mat/filtered_annotated_saver_ribomito_{sample}_log2_pc1_cpm.csv', cluster='{sample}/{sample}_kmeans_filtered.csv'
+    output:marker_paneth='markers/{sample}_Paneth_markers.tsv'
+    script: 
+        SRC_DIR+'/find_markers.py'
+
+def find_metagene_2samples(wildcards):
+    lista=[DATA_DIR+'/metagene/{sample_cet}_metagene.csv',
+            DATA_DIR+'/metagene/{sample_nt}_metagene.csv']
+    return lista 
+rule plot_bimodal_density_scaled:
+    input:c=find_metagene_2samples
+    output:out='distribution_scaled/{sample_cet}vs{sample_nt}_dist.pdf'
+    log:log="distribution_scaled_log/{sample_cet}vs{sample_nt}_dist.log"
+    script: SRC_DIR+'/distribution_scaled.R'
+
+rule plot_dist_paneth:
+    input:metagene=DATA_DIR+'/metagene/{sample}_metagene.csv', cluster='{sample}/{sample}_kmeans_filtered.csv'
+    output:out='distribution_paneth/{sample}_paneth_dist.pdf'
+    script:SRC_DIR+'/distribution_paneth.R'
+rule all_plot_paneth:
+    input:expand('distribution_paneth/{sample}_paneth_dist.pdf',sample=SAMPLES)
+
+rule umap_HES1_igested:
+    input: umap=DATA_DIR+'/umap_ingested/{sample}_umap_ingested.csv', data='popular_genes_datasets/{sample}_log2cpm.csv'
+    output:plot_out='ingested_HES1_{sat_min}_{sat_max}/{sample}_umap_metagene.pdf'
+    script:SRC_DIR+'/umap_HES1.R'
+rule all_umap_HES1_igested:
+    input: expand("ingested_HES1_{sat_min}_{sat_max}/{sample}_umap_metagene.pdf", sample=SAMPLES,sat_max=9,sat_min=1)
+
+
+rule plot_dist_HES1:
+    input:geni_cetux='popular_genes_datasets/{sample_cetux}_log2cpm.csv', cluster_cetux='{sample_cetux}/{sample_cetux}_kmeans_filtered.csv',geni_nt='popular_genes_datasets/{sample_nt}_log2cpm.csv', cluster_nt='{sample_nt}/{sample_nt}_kmeans_filtered.csv'
+    output:out='distribution_HES1/{sample_cetux}_vs_{sample_nt}_HES1_dist.pdf'
+    script:SRC_DIR+'/distribution_HES1_mixed.R'
+rule plot_dist_HES1_onlyOthers:
+    input:geni_cetux='popular_genes_datasets/{sample_cetux}_log2cpm.csv', cluster_cetux='{sample_cetux}/{sample_cetux}_kmeans_filtered.csv',geni_nt='popular_genes_datasets/{sample_nt}_log2cpm.csv', cluster_nt='{sample_nt}/{sample_nt}_kmeans_filtered.csv'
+    output:out='distribution_HES1_onlyOthers/{sample_cetux}_vs_{sample_nt}_HES1_dist.pdf'
+    script:SRC_DIR+'/distribution_HES1.R'
+
+rule plot_bimodal_hist:
+    input:c=find_metagene_2samples
+    output:out='hist_cetux_nt/{sample_cet}vs{sample_nt}_dist.pdf'
+    log:log="distribution_scaled_log/{sample_cet}vs{sample_nt}_dist.log"
+    script: SRC_DIR+'/hist_prova.R'
+
+rule plot_hist_HES1_onlyOthers:
+    input:geni_cetux='popular_genes_datasets/{sample_cetux}_log2cpm.csv', cluster_cetux='{sample_cetux}/{sample_cetux}_kmeans_filtered.csv',geni_nt='popular_genes_datasets/{sample_nt}_log2cpm.csv', cluster_nt='{sample_nt}/{sample_nt}_kmeans_filtered.csv'
+    output:out='hist_HES1_onlyOthers/{sample_cetux}_vs_{sample_nt}_HES1_dist.pdf'
+    script:SRC_DIR+'/hist_HES1.R'
+
+rule supp_5:
+    input: umap_nt=DATA_DIR+'/umap_ingested/{sample_nt}_umap_ingested.csv', data_nt='popular_genes_datasets/{sample_nt}_log2cpm.csv',umap_cet=DATA_DIR+'/umap_ingested/{sample_cet}_umap_ingested.csv', data_cet='popular_genes_datasets/{sample_cet}_log2cpm.csv'
+    output:plot_out='ingested_suppfig5{sat_min}_{sat_max}/{sample_cet}.{sample_nt}.supp5.pdf'
+    script:SRC_DIR+'/umap_metagene_supp5.R'
+rule all_supp_5:
+    input: expand("ingested_suppfig5{sat_min}_{sat_max}/{sample_cet}.{sample_nt}.supp5.pdf", sample_cet='CRC0327_cetux_2', sample_nt='CRC0327_NT_2', sat_max=7, sat_min=1)
+
+rule supp_1:
+    input: umap=DATA_DIR+'/umap_ingested/{sample}_umap_ingested.csv', data='popular_genes_datasets/{sample}_log2cpm.csv'
+    script:SRC_DIR+'/umap_metagene_supp1.R'
+rule all_supp_1:
+    input: expand("ingested_suppfig1{sat_min}_{sat_max}/{sample}_umap.pdf", sample=SAMPLES,sat_max=9,sat_min=1)
+
+
+rule cluster_bbknn:
+    input:data='popular_genes_datasets/{sample}_log2cpm.csv',umap=DATA_DIR+'/umap_ingested/{sample}_umap_ingested.csv',cluster='bbknn_clusters/obs_data.csv'
+    output:plot_out='bbknn_clusters/{sample}_bbknn_ingested.pdf'
+    script:SRC_DIR+'/bbknn_clusters.R'

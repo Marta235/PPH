@@ -1,0 +1,41 @@
+import os
+import sys
+def find_prj_root(path=os.getcwd()):
+    if os.path.isfile(os.path.join(path,'.PRJ_ROOT')):
+        return path
+    else:
+        if path:
+            return find_prj_root(os.path.dirname(path))
+        else:
+            raise Exception('Can not find the PRJ_ROOT directory')
+
+PRJ_ROOT=find_prj_root()
+
+BIOINFO_ROOT = os.getenv('BIOINFO_ROOT')
+SNAKE_ROOT=os.getenv('SNAKE_ROOT')
+
+BIN_DIR=PRJ_ROOT+'/local/bin'
+SRC_DIR=PRJ_ROOT+'/local/src'
+DATA_DIR=PRJ_ROOT+'/local/share/data'
+KMEANS_PATH=PRJ_ROOT+'/dataset/Kmeans'
+sys.path.append(SRC_DIR)
+
+SAMPLES=['CRC0327_cetux_2',
+'CRC0322_NT_1_3000',
+'CRC0322_cetux_1',
+'CRC0542_CTX72h_1',
+'CRC0542_NT72h_1',
+'CRC0327_NT_2',
+'CRC0069_NT72h_1',
+'CRC0069_CTX72h_1']
+
+
+SAMPLES_INVIVO=[
+'CRC0322LMX_CTX1w_1_singleron0722',
+'CRC0322LMX_NT1w_1_singleron0722',
+]
+
+NI_CET=[x for x in SAMPLES if not re.search('NT',x)]
+NI_NT=[x for x in SAMPLES if re.search('NT',x)]
+NI_CET.sort()
+NI_NT.sort()

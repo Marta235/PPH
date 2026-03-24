@@ -80,7 +80,8 @@ data$coloripaneth <- ifelse(data$colour == "#76069A", 'NSPC', 'SPC')
 
 TOTCELL<-nrow(df_combined)
 a<-ggplot(df_combined, aes(x = x, color = isPaneth)) +
-  geom_density(aes(y = after_stat(count/TOTCELL)), position = "identity", bw = 0.05, size = 1) +
+  geom_density(aes(y = after_stat(count/TOTCELL)), position = "identity", bw = 0.05,linewidth = 0.8,
+    key_glyph = draw_key_path) +
   scale_color_manual(name = "Cluster", 
                      values = c("NSPC" = "#76069A", "SPC" = "#099963")) +
   scale_x_continuous(expand = c(0, 0), limits = c(x_min, x_max), breaks = breaks_x) + 
@@ -97,13 +98,27 @@ guides(color = guide_legend(override.aes = list(linetype = 1, size = 1, shape = 
         scale_y_continuous(expand = c(0, 0),breaks=breaks_y,limits=c(0, maxy)) +
   labs(y = "PDF* fraction of cells", x = "SPC Metagene")                      # Etichetta asse Y
   #guides(color = guide_legend(override.aes = list(linetype = 1, size = 1, shape = NA, fill = NA)))
-a <- a + theme(
-  legend.position = c(0.95, 0.95),  # alto a destra
-  legend.justification = c(1, 1)
-)
+a <- a + 
+  theme_minimal() +
+  theme(
+  panel.background = element_rect(fill = "white", color = NA),
+  panel.grid.major = element_blank(),
+  panel.grid.minor = element_blank(),
+  axis.line = element_line(color = "black"),
+  axis.ticks = element_line(color = "black"),
+  axis.ticks.length = unit(0.2, "cm"),
+  axis.title.x = element_text(size = 8, color = "black"),
+  axis.title.y = element_text(size = 8, color = "black"),
+  axis.text = element_text(color = "black"),
+  legend.text = element_text(color = "black")
+)+guides(
+    color = guide_legend(
+      override.aes = list(
+        linewidth = 1
+      )
+    )
+  )
 
-pdf(output_plot)
-print(a)
-graphics.off()
+ggsave(output_plot, plot=a, width=100, height=100, units="mm")
  
 #save.image(paste0(output_plot, '.Rdata'))
