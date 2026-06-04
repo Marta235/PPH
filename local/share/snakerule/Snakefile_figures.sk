@@ -23,7 +23,7 @@ rule all_Fig1C:
 
 #FIG2 and FIG2S
 #A==> UMAP KMEANS
-#B==> Distribution metagene 
+#B==> Metagene distribution in paneth cells vs non paneth
 #C==> percentage cell cycle phases (barplot)
 #D==> radar plot
 rule Fig2A:
@@ -41,13 +41,61 @@ rule Fig2B:
 rule all_Fig2B:
     input:expand('Fig.2/B/{sample}_dist.pdf',sample=SAMPLES)
 
-######################
-
-rule plot_percentage_paneth_cc_barplot:
-    input:clust='{sample}/{sample}_kmeans_filtered.csv',cc=DATA_DIR+'/cc_data/filtered_annotated_saver_ribomito_{sample}_cellCycle.csv'
-    output:plot_out='paneth_percentage_barplot/{sample}_plot_percentage_cc.pdf'
-    log:log='paneth_percentage/{sample}_plot_percentage_cc_barplot.log'
+rule Fig2C:
+    input:clust=KMEANS_PATH+'/{sample}/{sample}_kmeans_filtered.csv',cc=DATA_DIR+'/cc_data/filtered_annotated_saver_ribomito_{sample}_cellCycle.csv'
+    output:plot_out='Fig.2/C/{sample}_plot_percentage_cc.pdf'
+    log:log='log/Fig.2/C/{sample}_percentage_cc.log'
     script:SRC_DIR+'/plot_percentage_paneth_cc_barplot.R'
+rule all_Fig2C:    
+    input: expand("Fig.2/C/{sample}_plot_percentage_cc.pdf", sample=SAMPLES)
+
+#Fig3 Invivo
+#A==> UMAP metagene invivo
+#B==> UMAP KMEANS invivo
+#C==> percentage cell cycle phases (barplot) invivo
+######################
+rule Fig3A:
+    input: umap=DATA_DIR+'/umap_ingested/{sample}_umap_ingested.csv', data=KMEANS_PATH+'/popular_genes_datasets/{sample}_log2cpm.csv'
+    output:plot_out='Fig.3/A/ingested_metagene_{sat_min}_{sat_max}/{sample}_umap_metagene.pdf'
+    script:SRC_DIR+'/umap_metagene.R'
+rule all_Fig3A:
+    input: expand("Fig.3/A/ingested_metagene_{sat_min}_{sat_max}/{sample}_umap_metagene.pdf", sample=SAMPLES_INVIVO,sat_max=9,sat_min=1)
+
+rule Fig3B:
+    input: umap=DATA_DIR+'/umap_ingested/{sample}_umap_ingested.csv',data_kmeans=KMEANS_PATH+'/{sample}/{sample}_kmeans_filtered.csv'
+    output:plot_out='Fig.3/B/{sample}_umap_kmeans.pdf'
+    script:SRC_DIR+'/umap_kmeans.R'
+
+rule all_Fig3B:  
+    input: expand("Fig.3/B/{sample}_umap_kmeans.pdf", sample=SAMPLES_INVIVO)
+
+rule Fig3C:
+    input:clust=KMEANS_PATH+'/{sample}/{sample}_kmeans_filtered.csv',cc=DATA_DIR+'/cc_data/filtered_annotated_{sample}_cellCycle.csv'
+    output:plot_out='Fig.3/C/{sample}_plot_percentage_cc.pdf'
+    log:log='log/Fig.3/C/{sample}_percentage_cc.log'
+    script:SRC_DIR+'/plot_percentage_paneth_cc_barplot.R'
+rule all_Fig3C:    
+    input: expand("Fig.3/C/{sample}_plot_percentage_cc.pdf", sample=SAMPLES_INVIVO)
+
+#########Figure 6
+#A==> boxplot HES1 Biobanca
+#B==> boxplot HES1 KO ATOH1 clones vs WT
+#C==> UMAP HES1 CRC0322 cetux vs NT
+#D==> FF+ HES1 DLL1 sorted cells #prism
+#F==> Confocal DLL1/ HES1 
+rule Fig6A:
+    input:lmo_fpkm=BIOBANCA_PATH+'/HES1_FPKM_LMO_selected_cetux_NT.csv', lmx_fpkm=BIOBANCA_PATH+'/HES1_FPKM_LMX_selected_cetux_NT.csv'
+    output:out_lmo='Fig.6/A/LMO_HES1_boxplot.pdf',out_lmx='Fig.6/A/LMX_HES1_boxplot.pdf'
+    script:SRC_DIR+'/HES1_biobanca.R'
+
+rule Fig6C:
+    input: umap=DATA_DIR+'/umap_ingested/{sample}_umap_ingested.csv', data=KMEANS_PATH+'/popular_genes_datasets/{sample}_log2cpm.csv'
+    output:plot_out='Fig.6/C/ingested_HES1_{sat_min}_{sat_max}/{sample}_umap_metagene.pdf'
+    script:SRC_DIR+'/umap_HES1.R'
+rule all_Fig6C:
+    input: expand("Fig.6/C/ingested_HES1_{sat_min}_{sat_max}/{sample}_umap_metagene.pdf", sample=SAMPLES,sat_max=9,sat_min=1)
+
+
 rule all_plot_percentage_paneth_cc_barplot:    
     input: expand("paneth_percentage_barplot/{sample}_plot_percentage_cc.pdf", sample=SAMPLES)
 rule plot_percentage_paneth_cc_cake_invivo:

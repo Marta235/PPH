@@ -39,3 +39,5 @@ NI_CET=[x for x in SAMPLES if not re.search('NT',x)]
 NI_NT=[x for x in SAMPLES if re.search('NT',x)]
 NI_CET.sort()
 NI_NT.sort()
+
+BIOBANCA_PATH=PRJ_ROOT+'/dataset/bulk/Biobanca'

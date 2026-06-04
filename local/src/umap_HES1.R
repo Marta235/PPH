@@ -39,11 +39,34 @@ chords<-read.table(file = umap,row.names = 'cell_id',sep=",",header = TRUE)
 #print(rownames(chords))
 colori<-rev(rainbow(10))[3:10]
 data<-merge(chords,dato,by='row.names')
+xr <- range(data$umap1, na.rm = TRUE)
+yr <- range(data$umap2, na.rm = TRUE)
+r <- max(diff(xr), diff(yr)) / 2
+cx <- mean(xr)
+cy <- mean(yr)
 
-j<-ggplot(data, aes(x=umap1, y=umap2,color=HES1)) + 
-rasterize(geom_point(size=0.01),dpi=300)+scale_color_gradientn(colours = colori,limits=c(sat_min,sat_max))+#+scale_color_viridis(limits=c(0,10),direction = -1)
-labs(color="HES1")+xlab('UMAP1')+ylab('UMAP2')+
-theme_classic()+theme(axis.ticks.x = element_blank(),axis.text.x = element_blank(),axis.ticks.y = element_blank(),axis.text.y = element_blank(),legend.position = "none")
-
+j <- ggplot(data, aes(x = umap1, y = umap2, color = HES1)) +
+  rasterize(geom_point(size = 0.01), dpi = 300) +
+  scale_color_gradientn(colours = colori) +
+  labs(color = "HES1") +
+  xlab("UMAP1") + ylab("UMAP2") +
+  coord_fixed(
+    xlim = c(cx - r, cx + r),
+    ylim = c(cy - r, cy + r)
+  ) +
+  theme_classic() +
+  theme(
+    aspect.ratio = 1,
+    axis.ticks.x = element_blank(),
+    axis.text.x = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.text.y = element_blank(),
+    legend.title = element_text(size = 8),
+    legend.text = element_text(size = 8)
+  ) +
+  guides(color = guide_colorbar(
+    barheight = unit(11, "mm"),
+    barwidth  = unit(2, "mm")
+  ))
 #fine <- ggarrange( p,k, ncol = 2, common.legend = FALSE)
-ggsave(plot_out, plot=j, width=55, height=55,unit="mm",dpi=300)
+ggsave(plot_out, plot = j, width = 70, height = 58, units = "mm")
