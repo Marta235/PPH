@@ -41,3 +41,4 @@ NI_CET.sort()
 NI_NT.sort()
 
 BIOBANCA_PATH=PRJ_ROOT+'/dataset/bulk/Biobanca'
+KO_PATH=PRJ_ROOT+'/dataset/bulk/KO_ATOH1'

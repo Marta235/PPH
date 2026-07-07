@@ -87,6 +87,10 @@ rule Fig6A:
     input:lmo_fpkm=BIOBANCA_PATH+'/HES1_FPKM_LMO_selected_cetux_NT.csv', lmx_fpkm=BIOBANCA_PATH+'/HES1_FPKM_LMX_selected_cetux_NT.csv'
     output:out_lmo='Fig.6/A/LMO_HES1_boxplot.pdf',out_lmx='Fig.6/A/LMX_HES1_boxplot.pdf'
     script:SRC_DIR+'/HES1_biobanca.R'
+rule Fig6B:
+    input:cas9_fpkm=KO_PATH+'/FPKM/fpkm_cas9.tsv.gz', clones_fpkm=KO_PATH+'/FPKM/fpkm_clones.tsv.gz'
+    output:outplot='Fig.6/B/HES1_boxplot.pdf'
+    script:SRC_DIR+'/boxplot_hes1_cas9_ko.R'
 
 rule Fig6C:
     input: umap=DATA_DIR+'/umap_ingested/{sample}_umap_ingested.csv', data=KMEANS_PATH+'/popular_genes_datasets/{sample}_log2cpm.csv'
