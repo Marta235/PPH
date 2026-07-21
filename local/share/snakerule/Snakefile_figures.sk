@@ -49,6 +49,12 @@ rule Fig2C:
 rule all_Fig2C:    
     input: expand("Fig.2/C/{sample}_plot_percentage_cc.pdf", sample=SAMPLES)
 
+rule Fig2D:
+    input:enrichment_dir=KMEANS_PATH+"/intestine_merged_Burclaff/"
+    output:output_nt='Fig.2/D/radar_NT.pdf',output_cetux='Fig.2/D/radar_cetuximab.pdf'
+    conda:ENVS_DIR+"/radar.yaml"
+    script:SRC_DIR+'/radar.py'
+
 #Fig3 Invivo
 #A==> UMAP metagene invivo
 #B==> UMAP KMEANS invivo

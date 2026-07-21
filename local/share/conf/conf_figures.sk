@@ -16,6 +16,7 @@ SNAKE_ROOT=os.getenv('SNAKE_ROOT')
 
 BIN_DIR=PRJ_ROOT+'/local/bin'
 SRC_DIR=PRJ_ROOT+'/local/src'
+ENVS_DIR=PRJ_ROOT+'/local/share/envs'
 DATA_DIR=PRJ_ROOT+'/local/share/data'
 KMEANS_PATH=PRJ_ROOT+'/dataset/Kmeans'
 sys.path.append(SRC_DIR)
