@@ -7,6 +7,7 @@ lmo_out<-snakemake@output[['out_lmo']]
 lmx_out<-snakemake@output[['out_lmx']]
 lmo_fpkm<-read.table(lmo_fpkm, header=T, sep=',')
 lmx_fpkm<-read.table(lmx_fpkm, header=T, sep=',')
+log_f <- snakemake@log[['log']]
 
   library(ggplot2)
   plot_nt_cet <- function( pd){
@@ -71,6 +72,10 @@ lmx_fpkm<-read.table(lmx_fpkm, header=T, sep=',')
       expand = c(0, 0)
     )
   
+  sink(log_f, append=T)
+  print(nrow(pd))
+  print(head(pd))
+  sink()   
   print(t.test(formula=as.formula('FPKM~Condition'), data=pd))
   return(p)}
 

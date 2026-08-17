@@ -4,7 +4,7 @@ def find_metagene_2samples(wildcards):
             DATA_DIR+'/metagene/{sample_nt}_metagene.csv']
     return lista 
 #FIG1
-#B==> UMAP metagene
+#B==> UMAP metagene 
 #C==>distribution metagene cetux nt 2y axis
 rule Fig1B:
     input: umap=DATA_DIR+'/umap_ingested/{sample}_umap_ingested.csv', data=KMEANS_PATH+'/popular_genes_datasets/{sample}_log2cpm.csv'
@@ -22,9 +22,9 @@ rule all_Fig1C:
     input: expand("Fig.1/C/{sample_cet}vs{sample_nt}_dist.pdf", zip, sample_cet=NI_CET, sample_nt=NI_NT)
 
 #FIG2 and FIG2S
-#A==> UMAP KMEANS
-#B==> Metagene distribution in paneth cells vs non paneth
-#C==> percentage cell cycle phases (barplot)
+#A==> UMAP KMEANS CRC0322 and FIG2S2 others tumoroids
+#B==> Metagene distribution in paneth cells vs non paneth in CRC0322 and FIG2S2 others tumoroids
+#C==> percentage cell cycle phases (barplot) CRC0322 and FIG2S2 others tumoroids
 #D==> radar plot
 rule Fig2A:
     input: umap=DATA_DIR+'/umap_ingested/{sample}_umap_ingested.csv',data_kmeans=KMEANS_PATH+'/{sample}/{sample}_kmeans_filtered.csv'
@@ -86,17 +86,22 @@ rule all_Fig3C:
 #########Figure 6
 #A==> boxplot HES1 Biobanca
 #B==> boxplot HES1 KO ATOH1 clones vs WT
-#C==> UMAP HES1 CRC0322 cetux vs NT
+#C==> UMAP HES1 CRC0322 cetux vs NT and Fig supplementary 6b umap HES1 other tumoroids
 #D==> FF+ HES1 DLL1 sorted cells #prism
 #F==> Confocal DLL1/ HES1 
+
+##################### 
+
 rule Fig6A:
     input:lmo_fpkm=BIOBANCA_PATH+'/HES1_FPKM_LMO_selected_cetux_NT.csv', lmx_fpkm=BIOBANCA_PATH+'/HES1_FPKM_LMX_selected_cetux_NT.csv'
     output:out_lmo='Fig.6/A/LMO_HES1_boxplot.pdf',out_lmx='Fig.6/A/LMX_HES1_boxplot.pdf'
-    script:SRC_DIR+'/HES1_biobanca.R'
+    log: log='Fig.6/A/HES1_LMOLMX.log'
+    script:SRC_DIR+'/HES1_biobanca.R' 
 rule Fig6B:
     input:cas9_fpkm=KO_PATH+'/FPKM/fpkm_cas9.tsv.gz', clones_fpkm=KO_PATH+'/FPKM/fpkm_clones.tsv.gz'
     output:outplot='Fig.6/B/HES1_boxplot.pdf'
     script:SRC_DIR+'/boxplot_hes1_cas9_ko.R'
+# per colpa mia (EG) Fig6B ha rigirato il 24/7 e i jitter dei puntini sono cambiati (stavo aggiungendo log per avere i numeri per una cption, nel posto sbagliato...)
 
 rule Fig6C:
     input: umap=DATA_DIR+'/umap_ingested/{sample}_umap_ingested.csv', data=KMEANS_PATH+'/popular_genes_datasets/{sample}_log2cpm.csv'
@@ -104,7 +109,54 @@ rule Fig6C:
     script:SRC_DIR+'/umap_HES1.R'
 rule all_Fig6C:
     input: expand("Fig.6/C/ingested_HES1_{sat_min}_{sat_max}/{sample}_umap_metagene.pdf", sample=SAMPLES,sat_max=9,sat_min=1)
+################
+##############Supplementary Figures
+###########FigS1==> UMAP single genes(ATOH1, DLL1, GFI1, DEFA5, DEFA6) all tumorids
+rule FigS1:
+    input:
+        umap=DATA_DIR+'/umap_ingested/{sample}_umap_ingested.csv',
+        data=KMEANS_PATH+'/popular_genes_datasets/{sample}_log2cpm.csv'
+    output:
+        plot_out='Fig.S1/{sample}_umap_genes.pdf'
+    script:
+        SRC_DIR+'/umap_metagene_supp1.R'
 
+rule all_FigS1:
+    input:
+        expand("Fig.S1/{sample}_umap_genes.pdf", sample=SAMPLES)
+
+#FIG S5
+#FigS5==> UMAP SMAD4 and FGFR3 CRC0322, CRC0542, CRC0327 untreated and cetuximab 
+rule FigS5:
+    input: umap_nt=DATA_DIR+'/umap_ingested/{sample_nt}_umap_ingested.csv', data_nt=KMEANS_PATH+'/popular_genes_datasets/{sample_nt}_log2cpm.csv',umap_cet=DATA_DIR+'/umap_ingested/{sample_cet}_umap_ingested.csv', data_cet=KMEANS_PATH+'/popular_genes_datasets/{sample_cet}_log2cpm.csv'
+    output:plot_out='Fig.S5/A/{sat_min}_{sat_max}/{sample_cet}.{sample_nt}.pdf'
+    script:SRC_DIR+'/umap_metagene_supp5.R'
+rule all_FigS5:
+    input: expand("Fig.S5/A/{sat_min}_{sat_max}/{sample_cet}.{sample_nt}.pdf", sample_cet='CRC0542_CTX72h_1', sample_nt='CRC0542_NT72h_1', sat_max=7, sat_min=1)
+# FIGURE S6 
+#
+rule FigS6C:
+    input:
+        gsea_cas9=KO_PATH+"/GSEA_results/GSEA_results_C2_trattamento_cutoff0.05-CETUX.vs.EGF0.1.cas9.tsv",
+        gsea_cloni=KO_PATH+"/GSEA_results/GSEA_results_C2_trattamento_cutoff0.05-CETUX.vs.EGF0.1.clones.tsv"
+    output:
+        plot_out="Fig.S6/C.pdf"
+    script:
+        SRC_DIR + "/notch_gsea_heatmap.R"
+
+rule FigS6D:
+    input:geni_cetux=KMEANS_PATH+'/popular_genes_datasets/{sample_cetux}_log2cpm.csv', cluster_cetux=KMEANS_PATH+'/{sample_cetux}/{sample_cetux}_kmeans_filtered.csv',geni_nt=KMEANS_PATH+'/popular_genes_datasets/{sample_nt}_log2cpm.csv', cluster_nt=KMEANS_PATH+'/{sample_nt}/{sample_nt}_kmeans_filtered.csv'
+    output:out='Fig.S6/D/{sample_cetux}_vs_{sample_nt}_HES1_dist.pdf'
+    script:SRC_DIR+'/distribution_HES1.R'
+rule all_FigS6D:
+    input:
+        expand(
+            "Fig.S6/D/{sample_cetux}_vs_{sample_nt}_HES1_dist.pdf",
+            zip,
+            sample_cetux=SAMPLES_CETUX,
+            sample_nt=SAMPLES_NT
+        )
+    
 
 rule all_plot_percentage_paneth_cc_barplot:    
     input: expand("paneth_percentage_barplot/{sample}_plot_percentage_cc.pdf", sample=SAMPLES)

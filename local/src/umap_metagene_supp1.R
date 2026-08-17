@@ -16,6 +16,7 @@ plot_out<-snakemake@output[['plot_out']]
 
 cinque<-c('ATOH1','DLL1','GFI1','DEFA5','DEFA6')
 dato<- read.table(file = input,row.names = 1,sep=",",header = TRUE)
+print(colnames(dato))
 
 
 cinque<-intersect(cinque, colnames(dato))
@@ -23,15 +24,12 @@ print(cinque)
 dato<-dato[,cinque]
 
 
-
-
-
-#set saturation to 10
-sat_max<-as.numeric(snakemake@wildcards[['sat_max']])
-sat_min<-as.numeric(snakemake@wildcards[['sat_min']])
+#set saturation 
+sat_max<-9
+sat_min<-1
 dato[dato>sat_max]<-sat_max
 dato[dato<sat_min]<-sat_min
-#write.csv(metagene_cinque, meta_ou, row.names=TRUE)
+
 
 chords<-read.table(file = umap,row.names = 'cell_id',sep=",",header = TRUE)
 
@@ -60,14 +58,13 @@ ylim_all <- range(data$umap2, na.rm = TRUE)
 
 base_theme <- theme_classic(base_size = 7) +
   theme(
-    axis.text  = element_blank(),   # niente numeri
-    axis.ticks = element_blank(),   # niente tick
-    axis.title = element_blank(),   # niente titolo
+    axis.text  = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
 
     axis.line  = element_line(linewidth = 0.3),
 
-    legend.title = element_blank(),  # niente titolo nella legenda
-    legend.text  = element_blank(),
+    legend.position = "none",
 
     aspect.ratio = 1
   )
@@ -104,10 +101,10 @@ defa6<-ggplot(data, aes(umap1, umap2, color = DEFA6)) +
   coord_equal(xlim = xlim_all, ylim = ylim_all, expand = TRUE)
 
 
-final_plot <- patchwork::wrap_plots(atoh, dll, gfi, defa5, defa6, ncol = 5, guides = "collect") &
-  theme(
-    legend.position = "none"
-  )
+final_plot <- patchwork::wrap_plots(
+  atoh, dll, gfi, defa5, defa6,
+  ncol = 5
+)
 
 ggsave(plot_out, final_plot, width = 180, height = 38, units = "mm", dpi = 300)
 

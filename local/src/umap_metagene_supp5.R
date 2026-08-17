@@ -65,20 +65,17 @@ ylim_all <- range(c(data_nt$umap2, data_cet$umap2), na.rm = TRUE)
 
 base_theme <- theme_classic(base_size = 7) +
   theme(
-    axis.text  = element_blank(),   # niente numeri
-    axis.ticks = element_blank(),   # niente tick
+    axis.text  = element_blank(),
+    axis.ticks = element_blank(),
     axis.title = element_text(size = 7),
-
     axis.line  = element_line(linewidth = 0.3),
-
     plot.margin = margin(1.5, 1.5, 1.5, 1.5, "mm"),
-
     legend.title = element_text(size = 7),
     legend.text  = element_text(size = 6),
-
+    legend.box.margin = margin(0, 0, 0, 0),
+    legend.margin = margin(0, 0, 0, 0),
     aspect.ratio = 1
   )
-
 
 smad_nt <- ggplot(data_nt, aes(umap1, umap2, color = SMAD1)) +
   rasterize(geom_point(size = 0.08), dpi = 300) +
@@ -109,12 +106,11 @@ fgfr3_cet <- ggplot(data_cet, aes(umap1, umap2, color = FGFR3)) +
   coord_equal(xlim = xlim_all, ylim = ylim_all, expand = TRUE)
 
 
-final_plot <- patchwork::wrap_plots(smad_nt,smad_cet, fgfr3_nt, fgfr3_cet, ncol = 4, guides = "collect") &
-  theme(
-    legend.position = "none",
-    legend.box.margin = margin(0, 0, 0, 0),
-    legend.margin = margin(0, 0, 0, 0)
-  )
+final_plot <- patchwork::wrap_plots(
+  smad_nt, smad_cet, fgfr3_nt, fgfr3_cet,
+  ncol = 4,
+  guides = "collect"
+)
 
 ggsave(plot_out, final_plot, width = 170, height = 42, units = "mm", dpi = 300)
 
