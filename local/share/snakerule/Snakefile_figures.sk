@@ -156,7 +156,7 @@ rule all_FigS6D:
             sample_cetux=SAMPLES_CETUX,
             sample_nt=SAMPLES_NT
         )
-    
+#Figure S7    
 rule FigS7A:
     input:
         deseq=KO_PATH+'/DEG/cas9_trattamento_cutoff0.05-CETUX.vs.EGF0.1.deseq2.tsv'
